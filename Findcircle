@@ -1,0 +1,41 @@
+#include<iostream>
+#include<opencv2/opencv.hpp>
+#include<opencv2/imgproc/imgproc.hpp>
+#include<opencv2/highgui/highgui.hpp>
+
+using namespace std;
+using namespace cv;
+
+void FindCircle();
+int main(){
+    FindCircle();
+}
+
+void FindCircle(){
+    Mat srcImage,dstImage1,grayImage,cannyImage;
+    int MinArea=100,MaxArea=1000,i;
+    double circlearea;
+    srcImage=imread("/home/ma/下载/renwu52.jpg");
+    srcImage.copyTo(dstImage1);
+    cvtColor(srcImage,grayImage,COLOR_BGR2GRAY);
+    Canny(grayImage,cannyImage,3,3,3);
+    vector<vector<Point>>pointContours;
+    findContours(cannyImage,pointContours,RETR_EXTERNAL,CHAIN_APPROX_NONE,Point(0,0));
+    vector<Point>targetContours;
+    auto amoutContours=pointContours.size();
+    for(i=0;i < amoutContours;i++){
+        circlearea=contourArea(pointContours[i]);
+        if(circlearea<MinArea||circlearea>MaxArea){
+            break;
+        }
+    }
+    auto pointCount=pointContours[i].size();
+    for(int j=0;j<pointCount;j++){
+        targetContours.push_back(pointContours[i][j]);
+        RotatedRect rectElli = fitEllipse(targetContours);
+        float r=MIN(rectElli.size.width , rectElli.size.height);
+        circle(dstImage1, Point(rectElli.center), r/2, Scalar(0,0,255), 2);
+        }
+    imshow("dstImage",dstImage1);
+    waitKey();
+}
